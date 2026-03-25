@@ -12,41 +12,59 @@ Educational **multi-agent CLI** for exploring a sequential workflow: symptom ana
 
 ## Setup
 
-Requires **Python 3.10+**. Use a virtual environment:
+Requires **Python 3.10+**. This repo is set up for **[uv](https://docs.astral.sh/uv/)** (lockfile + project env).
+
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
 ```bash
 cd MedicineAI
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -e .
-cp .env.example .env        # add OPENAI_API_KEY (and optionally ICD_* credentials)
+uv sync                    # creates .venv and installs deps from uv.lock
+cp .env.example .env       # add OPENAI_API_KEY (and optionally ICD_* credentials)
+```
+
+`uv sync` installs the package in editable mode from `pyproject.toml`. After that you can run commands with **`uv run`** (uses the project venv without activating it):
+
+```bash
+uv run medicineai validate patients_db/example_case.json
+uv run medicineai run patients_db/example_case.json --log session.json
 ```
 
 `run` needs `OPENAI_API_KEY`; `validate` does not call the APIs.
+
+**Adding or upgrading dependencies:** change `pyproject.toml` and run `uv lock` (and commit `uv.lock`), or use `uv add <package>`.
+
+**Without uv:** create a venv, then `pip install -e .` — same metadata, no lockfile guarantees.
 
 ## Usage
 
 Validate a patient JSON file:
 
 ```bash
-medicineai validate examples/case.json
+uv run medicineai validate patients_db/example_case.json
 ```
 
 Run the full workflow (interactive prompts for doctor review steps):
 
 ```bash
-medicineai run examples/case.json --log session.json
+uv run medicineai run patients_db/example_case.json --log session.json
+```
+
+Or, with the venv activated (`source .venv/bin/activate`):
+
+```bash
+medicineai validate patients_db/example_case.json
+medicineai run patients_db/example_case.json --log session.json
 ```
 
 Or:
 
 ```bash
-python main.py run examples/case.json
+uv run python main.py run patients_db/example_case.json
 ```
 
 ## Patient case JSON
 
-See [`examples/case.json`](examples/case.json). Fields are defined in `schemas.PatientCase` (`demographics`, `chief_complaint`, `symptoms`, optional `history`, `medications`, `allergies`, `vitals`, `labs`).
+Example cases live under [`patients_db/`](patients_db/): `example_case.json` (sore throat), plus `cough_acute_respiratory.json`, `headache_tension_like.json`, `gastroenteritis_acute.json`, `low_back_strain.json`, `contact_dermatitis_rash.json`. Fields are defined in `schemas.PatientCase` (`demographics`, `chief_complaint`, `symptoms`, optional `history`, `medications`, `allergies`, `vitals`, `labs`).
 
 ## ICD-11 API
 
