@@ -19,7 +19,7 @@ from medicineai.state import WorkflowContext, WorkflowPhase
 
 def _print_banner() -> None:
     print(
-        "\n=== MedicineAI (educational prototype) ===\n"
+        "\n=== MedicineAI (clinical decision-support prototype) ===\n"
         "Not for clinical use. Outputs are not medical advice.\n"
     )
 
@@ -148,7 +148,7 @@ def run_case(case: PatientCase, *, log_path: Path | None = None) -> WorkflowCont
         for m in treatment.general_measures:
             print(f"  - {m}")
         print(f"\nFollow-up: {treatment.follow_up}")
-        print(f"\n{treatment.educational_note}")
+        print(f"\n{treatment.disclaimer_note}")
 
         choice = _review_treatment()
         ctx.log("doctor_treatment_review", {"action": choice})

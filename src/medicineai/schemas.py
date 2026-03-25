@@ -84,8 +84,8 @@ class TreatmentOutput(BaseModel):
     overview: str = Field(description="High-level, non-prescriptive management overview.")
     general_measures: list[str] = Field(description="Supportive or general measures to discuss with a clinician.")
     follow_up: str = Field(description="When to seek urgent care or routine follow-up.")
-    educational_note: str = Field(
-        description="Reminder that this is not personalized medical advice.",
+    disclaimer_note: str = Field(
+        description="Safety reminder: not personalized medical advice; follow clinician guidance.",
     )
 
 

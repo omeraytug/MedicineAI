@@ -57,7 +57,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="MedicineAI — educational multi-agent CLI (not for clinical use).",
+        description="MedicineAI — clinical decision-support multi-agent CLI (not for clinical use).",
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
