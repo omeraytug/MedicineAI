@@ -64,9 +64,3 @@ Register at the [WHO ICD API](https://icd.who.int/icdapi/Account/Register), set 
 
 If search URLs fail, check the current release id for MMS in the official WHO ICD API documentation and adjust `ICD_RELEASE_ID`.
 
-## Remote
-
-```bash
-git remote add origin git@github.com:omeraytug/MedicineAI.git   # if not already added
-git push -u origin main
-```
