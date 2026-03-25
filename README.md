@@ -20,6 +20,10 @@ Multi-agent clinical decision-support prototype: symptom analysis → diagnosis 
 
 ![Verification agent output](artificats/verification_agent_output.png)
 
+## Architecture
+
+![Architecture flowchart](MedicineAI.png)
+
 ## Run
 
 ```bash
