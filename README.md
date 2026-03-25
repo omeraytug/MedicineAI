@@ -12,7 +12,7 @@ Educational **multi-agent CLI** for exploring a sequential workflow: symptom ana
 
 ## Setup
 
-Requires **Python 3.10+**. This repo is set up for **[uv](https://docs.astral.sh/uv/)** (lockfile + project env).
+Requires **Python 3.14+** (see `.python-version`). This repo is set up for **[uv](https://docs.astral.sh/uv/)** (lockfile + project env).
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
 
@@ -33,7 +33,6 @@ uv run medicineai run patients_db/example_case.json --log session.json
 
 **Adding or upgrading dependencies:** change `pyproject.toml` and run `uv lock` (and commit `uv.lock`), or use `uv add <package>`.
 
-**Without uv:** create a venv, then `pip install -e .` — same metadata, no lockfile guarantees.
 
 ## Usage
 
@@ -49,14 +48,7 @@ Run the full workflow (interactive prompts for doctor review steps):
 uv run medicineai run patients_db/example_case.json --log session.json
 ```
 
-Or, with the venv activated (`source .venv/bin/activate`):
-
-```bash
-medicineai validate patients_db/example_case.json
-medicineai run patients_db/example_case.json --log session.json
-```
-
-Or:
+Alternative entry point:
 
 ```bash
 uv run python main.py run patients_db/example_case.json
