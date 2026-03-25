@@ -1,66 +1,44 @@
 # MedicineAI
 
-Educational **multi-agent CLI** for exploring a sequential workflow: symptom analysis → diagnosis suggestions (with optional [WHO ICD-11 API](https://icd.who.int/icdapi/) search context) → doctor review → treatment proposal → doctor review → patient-facing summary.
+Multi-agent clinical decision-support prototype: symptom analysis → diagnosis suggestions → doctor review → treatment proposal → doctor review → patient-facing summary.
 
-**Not for clinical use.** This is a school project prototype; outputs are **not** medical advice.
+## Demo (workflow screenshots)
 
-## Architecture
+### 1) Symptom agent
 
-- **LangChain** (`ChatOpenAI` + structured output) for four agents.
-- **Plain Python orchestrator** for the state machine, loops, and terminal-based doctor reviews.
-- Optional **ICD-11 MMS search** via OAuth2 client credentials (see `.env.example`).
+![Symptom agent](artificats/symptom_agent.png)
 
-## Setup
+### 2) Diagnosis + first doctor review
 
-Requires **Python 3.14+** (see `.python-version`). This repo is set up for **[uv](https://docs.astral.sh/uv/)** (lockfile + project env).
+![Diagnosis agent first doctor review](artificats/diagnosis_agent_first_human_review.png)
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then:
+### 3) Treatment + second doctor review
 
-```bash
-cd MedicineAI
-uv sync                    # creates .venv and installs deps from uv.lock
-cp .env.example .env       # add OPENAI_API_KEY (and optionally ICD_* credentials)
-```
+![Treatment agent second doctor review](artificats/treatment_agent_second_human_review.png)
 
-`uv sync` installs the package in editable mode from `pyproject.toml`. After that you can run commands with **`uv run`** (uses the project venv without activating it):
+### 4) Verification / patient output
+
+![Verification agent output](artificats/verification_agent_output.png)
+
+## Run
 
 ```bash
+uv sync
+cp .env.example .env   # set OPENAI_API_KEY (+ optional ICD_* credentials)
+
 uv run medicineai validate patients_db/example_case.json
 uv run medicineai run patients_db/example_case.json --log session.json
 ```
 
-`run` needs `OPENAI_API_KEY`; `validate` does not call the APIs.
+The `--log session.json` file contains the full audit trail for that run (agent outputs + doctor decisions).
 
-**Adding or upgrading dependencies:** change `pyproject.toml` and run `uv lock` (and commit `uv.lock`), or use `uv add <package>`.
+## ICD-11 API (optional)
 
+Set `ICD_CLIENT_ID` and `ICD_CLIENT_SECRET` in `.env`.
+If credentials are missing, the app still runs; the diagnosis agent uses only the LLM (with a note in the ICD context section).
 
-## Usage
+If ICD search returns no results or fails, adjust `ICD_RELEASE_ID` (MMS release id) in `.env` according to the WHO ICD-11 API documentation.
 
-Validate a patient JSON file:
+## Patient cases
 
-```bash
-uv run medicineai validate patients_db/example_case.json
-```
-
-Run the full workflow (interactive prompts for doctor review steps):
-
-```bash
-uv run medicineai run patients_db/example_case.json --log session.json
-```
-
-Alternative entry point:
-
-```bash
-uv run python main.py run patients_db/example_case.json
-```
-
-## Patient case JSON
-
-Example cases live under [`patients_db/`](patients_db/): `example_case.json` (sore throat), plus `cough_acute_respiratory.json`, `headache_tension_like.json`, `gastroenteritis_acute.json`, `low_back_strain.json`, `contact_dermatitis_rash.json`. Fields are defined in `schemas.PatientCase` (`demographics`, `chief_complaint`, `symptoms`, optional `history`, `medications`, `allergies`, `vitals`, `labs`).
-
-## ICD-11 API
-
-Register at the [WHO ICD API](https://icd.who.int/icdapi/Account/Register), set `ICD_CLIENT_ID` and `ICD_CLIENT_SECRET` in `.env`. If credentials are missing, the app still runs; the diagnosis agent uses only the LLM (with a note in the ICD context section).
-
-If search URLs fail, check the current release id for MMS in the official WHO ICD API documentation and adjust `ICD_RELEASE_ID`.
-
+Put JSON inputs in `patients_db/` (validated against `schemas.PatientCase`).
