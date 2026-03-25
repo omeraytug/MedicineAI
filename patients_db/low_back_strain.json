@@ -1,0 +1,36 @@
+{
+  "schema_version": "patient_case_v1",
+  "demographics": {
+    "age": 41,
+    "sex": "female",
+    "weight_kg": 71
+  },
+  "chief_complaint": "Lower back pain after lifting a heavy box.",
+  "symptoms": [
+    {
+      "description": "Localized pain in lumbar region",
+      "onset": "2 days ago after lifting",
+      "severity": "moderate",
+      "duration": "constant dull ache with sharp twinges on movement"
+    },
+    {
+      "description": "Pain radiates slightly to right buttock but not below the knee",
+      "onset": "same",
+      "severity": "mild",
+      "duration": "intermittent"
+    },
+    {
+      "description": "Stiffness in the morning",
+      "onset": "since injury",
+      "severity": "mild",
+      "duration": "first 30 minutes after waking"
+    }
+  ],
+  "history": "No prior disc surgery. Desk job. No bowel or bladder changes.",
+  "medications": ["Paracetamol 1 g as needed"],
+  "allergies": [],
+  "vitals": {
+    "heart_rate_bpm": 76
+  },
+  "labs": null
+}

@@ -1,0 +1,43 @@
+{
+  "schema_version": "patient_case_v1",
+  "demographics": {
+    "age": 22,
+    "sex": "male"
+  },
+  "chief_complaint": "Vomiting and watery diarrhea since yesterday.",
+  "symptoms": [
+    {
+      "description": "Nausea and vomiting",
+      "onset": "24 hours ago",
+      "severity": "moderate",
+      "duration": "multiple episodes"
+    },
+    {
+      "description": "Watery diarrhea without blood",
+      "onset": "18 hours ago",
+      "severity": "moderate",
+      "duration": "frequent"
+    },
+    {
+      "description": "Cramping abdominal pain",
+      "onset": "same illness",
+      "severity": "moderate",
+      "duration": "comes in waves"
+    },
+    {
+      "description": "Reduced oral intake; feels dehydrated",
+      "onset": "12 hours ago",
+      "severity": "mild",
+      "duration": "ongoing"
+    }
+  ],
+  "history": "Ate takeout food 36 hours before onset. No travel abroad. No antibiotics recently.",
+  "medications": [],
+  "allergies": [],
+  "vitals": {
+    "temperature_c": 37.4,
+    "heart_rate_bpm": 102,
+    "blood_pressure_mmhg": "108/68"
+  },
+  "labs": null
+}

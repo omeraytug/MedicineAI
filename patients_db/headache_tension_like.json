@@ -1,0 +1,36 @@
+{
+  "schema_version": "patient_case_v1",
+  "demographics": {
+    "age": 29,
+    "sex": "female"
+  },
+  "chief_complaint": "Bilateral pressure headache for two weeks.",
+  "symptoms": [
+    {
+      "description": "Band-like pressure around the head",
+      "onset": "2 weeks ago",
+      "severity": "moderate",
+      "duration": "hours at a time, most days"
+    },
+    {
+      "description": "Neck and shoulder tightness",
+      "onset": "same period",
+      "severity": "mild",
+      "duration": "variable"
+    },
+    {
+      "description": "Worse after long screen time and poor sleep",
+      "onset": "variable",
+      "severity": "mild",
+      "duration": "end of workday"
+    }
+  ],
+  "history": "No prior migraine diagnosis. Stress at work. No focal neuro symptoms.",
+  "medications": ["Ibuprofen as needed"],
+  "allergies": ["Ibuprofen (stomach upset — avoids high doses)"],
+  "vitals": {
+    "heart_rate_bpm": 72,
+    "blood_pressure_mmhg": "118/74"
+  },
+  "labs": null
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "patient_case_v1",
+  "demographics": {
+    "age": 52,
+    "sex": "male",
+    "weight_kg": 88
+  },
+  "chief_complaint": "Cough with colored sputum for five days.",
+  "symptoms": [
+    {
+      "description": "Productive cough with yellow-green sputum",
+      "onset": "5 days ago",
+      "severity": "moderate",
+      "duration": "ongoing"
+    },
+    {
+      "description": "Mild shortness of breath when walking upstairs",
+      "onset": "2 days ago",
+      "severity": "mild",
+      "duration": "intermittent"
+    },
+    {
+      "description": "Low-grade fever",
+      "onset": "3 days ago",
+      "severity": "low",
+      "duration": "evenings"
+    }
+  ],
+  "history": "Former smoker (quit 4 years ago, 20 pack-years). Hypertension.",
+  "medications": ["Lisinopril 10 mg daily"],
+  "allergies": [],
+  "vitals": {
+    "temperature_c": 37.8,
+    "heart_rate_bpm": 88,
+    "blood_pressure_mmhg": "138/86",
+    "spo2_percent": 96
+  },
+  "labs": null
+}

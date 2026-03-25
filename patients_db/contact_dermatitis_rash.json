@@ -1,0 +1,30 @@
+{
+  "schema_version": "patient_case_v1",
+  "demographics": {
+    "age": 8,
+    "sex": "male"
+  },
+  "chief_complaint": "Itchy red rash on wrists after new hand soap.",
+  "symptoms": [
+    {
+      "description": "Erythematous itchy patches on both wrists",
+      "onset": "4 days after starting new soap",
+      "severity": "mild",
+      "duration": "persistent itch"
+    },
+    {
+      "description": "No fever or systemic symptoms",
+      "onset": "n/a",
+      "severity": "none",
+      "duration": "n/a"
+    }
+  ],
+  "history": "Otherwise healthy. No asthma. No similar rashes before.",
+  "medications": [],
+  "allergies": ["Peanuts (anaphylaxis — carries epinephrine)"],
+  "vitals": {
+    "temperature_c": 36.7,
+    "heart_rate_bpm": 96
+  },
+  "labs": null
+}
