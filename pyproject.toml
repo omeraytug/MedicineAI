@@ -25,3 +25,4 @@ medicineai = "medicineai.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["medicineai*"]
