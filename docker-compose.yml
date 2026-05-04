@@ -40,11 +40,11 @@ services:
     env_file:
       - .env
     environment:
-      MEDICINEAI_API_URL: http://api:8000
+      API_URL: http://api:8000
     command:
       - streamlit
       - run
-      - streamlit_app.py
+      - app.py
       - --server.address=0.0.0.0
       - --server.port=8501
       - --server.headless=true
