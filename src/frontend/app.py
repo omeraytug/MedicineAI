@@ -2,7 +2,7 @@
 Streamlit UI for MedicineAI: sends questions to the FastAPI backend (`/v1/ask`).
 
 Run API:  uv run uvicorn medicineai.api.main:app --host 127.0.0.1 --port 8000
-Run UI:   uv run streamlit run streamlit_app.py
+Run UI:   API_URL=http://127.0.0.1:8000 uv run streamlit run src/frontend/app.py
 """
 
 from __future__ import annotations
@@ -14,7 +14,8 @@ from typing import Any
 import httpx
 import streamlit as st
 
-DEFAULT_API = os.getenv("MEDICINEAI_API_URL", "http://127.0.0.1:8000")
+# Backend base URL (Azure: set Application setting API_URL). MEDICINEAI_API_URL is legacy fallback.
+API_URL = os.getenv("API_URL", os.getenv("MEDICINEAI_API_URL", "http://localhost:8000"))
 
 
 st.set_page_config(
@@ -37,8 +38,6 @@ st.title("MedicineAI")
 st.caption("Clinical decision-support demo — not for real-world clinical use.")
 
 with st.sidebar:
-    st.subheader("Connection")
-    api_base = st.text_input("API base URL", value=DEFAULT_API, help="FastAPI server root (no trailing slash).")
     st.subheader("Optional context")
     age_raw = st.text_input("Age (optional)", placeholder="e.g. 42")
     age_val: int | None = None
@@ -87,12 +86,12 @@ if submit:
 
         with st.spinner("Running workflow (symptom → diagnosis → treatment → patient summary)…"):
             try:
-                data = _call_api(api_base, payload)
+                data = _call_api(API_URL, payload)
             except httpx.HTTPStatusError as e:
                 st.error(f"API error {e.response.status_code}: {e.response.text}")
                 st.stop()
             except httpx.RequestError as e:
-                st.error(f"Could not reach API at {api_base!r}: {e}")
+                st.error(f"Could not reach the API: {e}")
                 st.stop()
 
         st.session_state["last_result"] = data.get("result", data)
