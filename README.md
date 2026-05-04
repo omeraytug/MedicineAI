@@ -36,6 +36,20 @@ uv run medicineai run patients_db/example_case.json --log session.json
 
 The `--log session.json` file contains the full audit trail for that run (agent outputs + doctor decisions).
 
+## Docker (API + Streamlit)
+
+Images are split: **`dockerfiles/Dockerfile.backend`** (FastAPI + agents) and **`dockerfiles/Dockerfile.frontend`** (Streamlit only).
+
+```bash
+cp .env.example .env   # set OPENAI_API_KEY, optional ICD_* (same as local dev)
+docker compose up --build
+```
+
+- **API:** [http://localhost:8000](http://localhost:8000) (OpenAPI: [http://localhost:8000/docs](http://localhost:8000/docs))
+- **Streamlit UI:** [http://localhost:8501](http://localhost:8501) — the UI container calls the API at `http://api:8000` via `MEDICINEAI_API_URL`.
+
+`docker compose` reads `.env` from the project root for both services (keys must be present for the API to call models; the UI image does not need API keys unless you add them for future use).
+
 ## ICD-11 API (optional)
 
 Set `ICD_CLIENT_ID` and `ICD_CLIENT_SECRET` in `.env`.
