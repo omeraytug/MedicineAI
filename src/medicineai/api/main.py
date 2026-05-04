@@ -9,8 +9,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from medicineai.orchestrator import run_case
-from medicineai.schemas import Demographics, PatientCase, SymptomEntry
+from medicineai.orchestrator import continue_from_selected_diagnosis, run_case, run_through_diagnosis_only
+from medicineai.schemas import Demographics, DiagnosisOutput, PatientCase, SymptomAnalysisOutput, SymptomEntry
 from medicineai.state import WorkflowContext
 
 DISCLAIMER = (
@@ -64,6 +64,26 @@ class AskResponse(BaseModel):
     result: dict[str, Any]
 
 
+class AnalyzeRequest(BaseModel):
+    """Symptom + ranked differentials only; no treatment until clinician selects via /v1/continue."""
+
+    question: str = Field(..., min_length=1)
+    age: int | None = Field(default=None, ge=0, le=130)
+    sex: str | None = None
+
+
+class ContinueRequest(BaseModel):
+    """Reuse symptom + diagnosis from /v1/analyze or /v1/ask; only treatment → verification execute."""
+
+    question: str = Field(..., min_length=1)
+    age: int | None = Field(default=None, ge=0, le=130)
+    sex: str | None = None
+    symptom: dict[str, Any]
+    diagnosis: dict[str, Any]
+    diagnosis_index: int = Field(ge=0)
+    icd_context: str = ""
+
+
 app = FastAPI(
     title="MedicineAI API",
     description="Submit questions and run the existing multi-agent workflow (non-interactive).",
@@ -85,6 +105,21 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.post("/v1/analyze", response_model=AskResponse)
+def analyze(body: AnalyzeRequest) -> AskResponse:
+    try:
+        case = _case_from_query(body.question, age=body.age, sex=body.sex)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    try:
+        ctx = run_through_diagnosis_only(case, interactive=False)
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+    return AskResponse(result=_serialize_context(ctx))
+
+
 @app.post("/v1/ask", response_model=AskResponse)
 def ask(body: AskRequest) -> AskResponse:
     try:
@@ -97,6 +132,35 @@ def ask(body: AskRequest) -> AskResponse:
             case,
             interactive=False,
             auto_diagnosis_index=body.diagnosis_index,
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e)) from e
+
+    return AskResponse(result=_serialize_context(ctx))
+
+
+@app.post("/v1/continue", response_model=AskResponse)
+def continue_plan(body: ContinueRequest) -> AskResponse:
+    try:
+        case = _case_from_query(body.question, age=body.age, sex=body.sex)
+        symptom = SymptomAnalysisOutput.model_validate(body.symptom)
+        diagnosis = DiagnosisOutput.model_validate(body.diagnosis)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+
+    n = len(diagnosis.candidates)
+    if n == 0:
+        raise HTTPException(status_code=400, detail="Diagnosis has no candidates.")
+    idx = min(body.diagnosis_index, n - 1)
+
+    try:
+        ctx = continue_from_selected_diagnosis(
+            case,
+            symptom=symptom,
+            diagnosis=diagnosis,
+            diagnosis_index=idx,
+            icd_context=body.icd_context or "",
+            interactive=False,
         )
     except RuntimeError as e:
         raise HTTPException(status_code=502, detail=str(e)) from e
