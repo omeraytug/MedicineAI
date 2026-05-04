@@ -116,17 +116,21 @@ Restart apps after changing configuration. Check backend: `GET /health` → `{"s
 
 ### Web UI (Streamlit)
 
-Case intake and **Run analysis**:
+Case narrative and **Run analysis**:
 
-![Streamlit case input](docs/images/ui-case-input.png)
+![Streamlit first page](docs/images/first_page.png)
 
-Symptom + differentials and working-differential selection:
+Symptom analysis and diagnosis differentials (§1–2):
 
-![Streamlit differentials and doctor selection](docs/images/ui-differentials.png)
+![Streamlit workflow output sections 1–2](docs/images/workflow_output_1-2.png)
 
-Treatment proposal and patient-facing summary:
+Working-differential dropdown:
 
-![Streamlit treatment and patient summary](docs/images/ui-plan-summary.png)
+![Streamlit doctor selection](docs/images/doctor_selection_dropdown.png)
+
+Treatment and patient-facing summary (§3–4):
+
+![Streamlit plan and summary sections 3–4](docs/images/ui-plan-summary-3-4.png)
 
 ---
 
