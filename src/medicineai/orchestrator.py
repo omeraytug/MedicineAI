@@ -69,6 +69,63 @@ def _dump_audit(ctx: WorkflowContext) -> list[dict[str, Any]]:
     return out
 
 
+def run_through_diagnosis_only(
+    case: PatientCase,
+    *,
+    interactive: bool = False,
+) -> WorkflowContext:
+    """
+    Run symptom analysis and diagnosis ranking only (plus ICD-11 context).
+    Does not select a working differential or run treatment / verification — for APIs where the
+    clinician chooses the differential first, then ``continue_from_selected_diagnosis`` runs.
+    """
+
+    def say(*args: object, **kwargs: object) -> None:
+        if interactive:
+            print(*args, **kwargs)
+
+    if interactive:
+        _print_banner()
+
+    ctx = WorkflowContext(case=case)
+    symptom_chain = build_symptom_chain()
+    diagnosis_chain = build_diagnosis_chain()
+
+    ctx.log("phase", {"phase": WorkflowPhase.SYMPTOM.value})
+    say("\n[Agent 1 — Symptom analysis]")
+    symptom: SymptomAnalysisOutput = symptom_chain.invoke({"case_text": case.as_prompt_context()})
+    ctx.symptom = symptom
+    ctx.log("symptom_output", {"data": symptom.model_dump()})
+    say(symptom.clinical_summary)
+    say("\nKey points:")
+    for p in symptom.key_points:
+        say(f"  - {p}")
+
+    say("\n[ICD-11 MMS search context]")
+    icd_ctx = build_icd_context_for_queries(symptom.icd_search_queries)
+    ctx.icd_context = icd_ctx
+    if icd_ctx.strip():
+        say(icd_ctx[:8000])
+        if len(icd_ctx) > 8000:
+            say("\n... (truncated display)")
+    else:
+        say("(No ICD-11 credentials or no results — diagnosis agent continues with LLM only.)")
+
+    ctx.log("phase", {"phase": WorkflowPhase.DIAGNOSIS.value})
+    say("\n[Agent 2 — Diagnosis suggestions]")
+    diagnosis: DiagnosisOutput = diagnosis_chain.invoke(
+        {
+            "symptom_json": symptom.model_dump_json(indent=2),
+            "icd_context": icd_ctx or "(no ICD-11 API results)",
+        }
+    )
+    ctx.diagnosis = diagnosis
+    ctx.log("diagnosis_output", {"data": diagnosis.model_dump()})
+
+    ctx.log("stopped_after_diagnosis", {"reason": "awaiting_differential_selection"})
+    return ctx
+
+
 def run_case(
     case: PatientCase,
     *,
@@ -217,4 +274,106 @@ def run_case(
         log_path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         say(f"Session log written to {log_path}")
 
+    return ctx
+
+
+def continue_from_selected_diagnosis(
+    case: PatientCase,
+    *,
+    symptom: SymptomAnalysisOutput,
+    diagnosis: DiagnosisOutput,
+    diagnosis_index: int,
+    icd_context: str = "",
+    interactive: bool = False,
+) -> WorkflowContext:
+    """
+    Re-run only treatment → verification using existing symptom and diagnosis outputs.
+    Use when the clinician changes which ranked differential should drive management,
+    without re-invoking the symptom or diagnosis agents.
+    """
+
+    def say(*args: object, **kwargs: object) -> None:
+        if interactive:
+            print(*args, **kwargs)
+
+    if not diagnosis.candidates:
+        raise RuntimeError("Diagnosis has no candidates; cannot continue.")
+
+    idx = max(0, min(diagnosis_index, len(diagnosis.candidates) - 1))
+
+    ctx = WorkflowContext(case=case)
+    ctx.symptom = symptom
+    ctx.diagnosis = diagnosis
+    ctx.icd_context = icd_context
+    ctx.selected_diagnosis = diagnosis.candidates[idx]
+    ctx.log("phase", {"phase": WorkflowPhase.SYMPTOM.value})
+    ctx.log("symptom_output", {"data": symptom.model_dump(), "reused": True})
+    ctx.log("phase", {"phase": WorkflowPhase.DIAGNOSIS.value})
+    ctx.log("diagnosis_output", {"data": diagnosis.model_dump(), "reused": True})
+    ctx.log("continue_from_diagnosis", {"diagnosis_index": idx})
+
+    treatment_chain = build_treatment_chain()
+    verification_chain = build_verification_chain()
+
+    diagnosis_line = (
+        f"{ctx.selected_diagnosis.title}\n"
+        f"Rationale: {ctx.selected_diagnosis.rationale}\n"
+        f"ICD-11: {ctx.selected_diagnosis.icd11_code or ''} {ctx.selected_diagnosis.icd11_uri or ''}".strip()
+    )
+
+    while True:
+        ctx.log("phase", {"phase": WorkflowPhase.TREATMENT.value})
+        say("\n[Agent 3 — Treatment proposal]")
+        treatment = treatment_chain.invoke(
+            {
+                "case_text": case.as_prompt_context(),
+                "diagnosis_line": diagnosis_line,
+            }
+        )
+        ctx.treatment = treatment
+        ctx.log("treatment_output", {"data": treatment.model_dump()})
+        say(treatment.overview)
+        say("\nGeneral measures:")
+        for m in treatment.general_measures:
+            say(f"  - {m}")
+        say(f"\nFollow-up: {treatment.follow_up}")
+        say(f"\n{treatment.disclaimer_note}")
+
+        if interactive:
+            choice = _review_treatment()
+        else:
+            choice = "A"
+        ctx.log("doctor_treatment_review", {"action": choice})
+
+        if choice == "H":
+            ctx.log("terminated", {"reason": "doctor_handoff_treatment"})
+            say("\nProcess ended: clinician takes over.")
+            return ctx
+        if choice == "R":
+            say("\nSending back to treatment agent...\n")
+            continue
+        break
+
+    ctx.log("phase", {"phase": WorkflowPhase.VERIFICATION.value})
+    say("\n[Agent 4 — Verification / patient summary]")
+    verification = verification_chain.invoke(
+        {
+            "case_text": case.as_prompt_context(),
+            "diagnosis_line": diagnosis_line,
+            "treatment_json": ctx.treatment.model_dump_json(indent=2),
+        }
+    )
+    ctx.verification = verification
+    ctx.log("verification_output", {"data": verification.model_dump()})
+
+    say("\n========== Output for patient ==========\n")
+    say(f"**{verification.patient_title}**\n")
+    say(verification.patient_summary)
+    say("\nWhat to do next:")
+    for s in verification.what_to_do_next:
+        say(f"  - {s}")
+    say(f"\nWhen to seek care:\n{verification.when_to_seek_care}")
+    say("\n========================================\n")
+
+    ctx.log("phase", {"phase": WorkflowPhase.DONE.value})
     return ctx
