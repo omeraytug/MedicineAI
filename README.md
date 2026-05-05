@@ -30,7 +30,7 @@ Patient JSON lives under **`patients_db/`** (`schemas.PatientCase`).
 uv run uvicorn medicineai.api.main:app --host 127.0.0.1 --port 8000
 
 # shell 2 — API_URL optional; defaults work for localhost
-API_URL=http://127.0.0.1:8000 uv run streamlit run src/frontend/app.py
+API_URL=http://127.0.0.1:8000 uv run streamlit run src/frontend/MedicineAI.py
 ```
 
 - Docs / try-it: [http://localhost:8000/docs](http://localhost:8000/docs)

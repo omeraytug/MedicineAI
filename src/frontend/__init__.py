@@ -1,1 +1,1 @@
-"""Streamlit frontend (see app.py)."""
+"""Streamlit frontend (see MedicineAI.py)."""

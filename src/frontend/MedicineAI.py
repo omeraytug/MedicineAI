@@ -5,7 +5,7 @@ Initial run: POST /v1/analyze (symptom + differentials only).
 After doctor selects a differential: POST /v1/continue (treatment + patient summary).
 
 Run API:  uv run uvicorn medicineai.api.main:app --host 127.0.0.1 --port 8000
-Run UI:   API_URL=http://127.0.0.1:8000 uv run streamlit run src/frontend/app.py
+Run UI:   API_URL=http://127.0.0.1:8000 uv run streamlit run src/frontend/MedicineAI.py
 """
 
 from __future__ import annotations
@@ -135,6 +135,7 @@ def _continue_and_store(prior: dict[str, Any], lc: dict[str, Any], diagnosis_ind
 
 
 st.title("MedicineAI")
+st.caption("Use the sidebar for **About** and **ICD-11**.")
 st.caption("Clinical decision support — case review, differentials, management, and patient-facing summary.")
 
 with st.sidebar:

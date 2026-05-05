@@ -10,8 +10,9 @@ ENV PYTHONUNBUFFERED=1 \
 
 RUN pip install --no-cache-dir "streamlit>=1.40" "httpx>=0.27"
 
-COPY src/frontend/app.py ./app.py
+COPY src/frontend/MedicineAI.py ./MedicineAI.py
+COPY src/frontend/pages ./pages
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true", "--browser.gatherUsageStats=false"]
+CMD ["streamlit", "run", "MedicineAI.py", "--server.address=0.0.0.0", "--server.port=8501", "--server.headless=true", "--browser.gatherUsageStats=false"]
